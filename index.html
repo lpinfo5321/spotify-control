@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Control de Música - La Primavera</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1DB954, #191414);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .player {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        button {
+            background: #1DB954;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            background: #1ed760;
+        }
+        
+        .controls {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        #nowPlaying {
+            margin: 16px 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        #status {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #1DB954;
+        }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <h2>Control de Música</h2>
+        <div id="login">
+            <button onclick="iniciarSpotify()">Conectar con Spotify</button>
+        </div>
+        <div id="controls" class="controls">
+            <button onclick="playPause()" id="playButton">Play</button>
+            <button onclick="nextTrack()">Siguiente</button>
+            <div id="nowPlaying">No hay música reproduciendo</div>
+        </div>
+        <div id="status">No conectado</div>
+    </div>
+
+    <script>
+        const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
+        const API_ENDPOINT = 'https://api.spotify.com/v1';
+        const scopes = [
+            'user-read-playback-state',
+            'user-modify-playback-state',
+            'streaming'
+        ];
+
+        let accessToken = null;
+        let isPlaying = false;
+
+        function iniciarSpotify() {
+            const clientId = '55d3f6c5ed4441e8b79c17a5ba54f39f';
+            const redirectUri = 'https://laprimavera5321.github.io/spotify-control/';
+            
+            const authUrl = `${AUTH_ENDPOINT}?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes.join('%20')}`;
+            window.location.href = authUrl;
+        }
+
+        function getHashParams() {
+            const hash = window.location.hash.substring(1);
+            return hash.split('&').reduce((acc, item) => {
+                const [key, value] = item.split('=');
+                acc[key] = value;
+                return acc;
+            }, {});
+        }
+
+        async function checkPlayback() {
+            try {
+                const response = await fetch(`${API_ENDPOINT}/me/player`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                
+                if (response.status === 200) {
+                    const data = await response.json();
+                    isPlaying = data.is_playing;
+                    document.getElementById('playButton').textContent = isPlaying ? 'Pause' : 'Play';
+                    if (data.item) {
+                        document.getElementById('nowPlaying').textContent = 
+                            `Reproduciendo: ${data.item.name} - ${data.item.artists[0].name}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking playback:', error);
+            }
+        }
+
+        async function playPause() {
+            const endpoint = isPlaying ? 'pause' : 'play';
+            try {
+                await fetch(`${API_ENDPOINT}/me/player/${endpoint}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                isPlaying = !isPlaying;
+                document.getElementById('playButton').textContent = isPlaying ? 'Pause' : 'Play';
+                setTimeout(checkPlayback, 500);
+            } catch (error) {
+                console.error('Error controlling playback:', error);
+            }
+        }
+
+        async function nextTrack() {
+            try {
+                await fetch(`${API_ENDPOINT}/me/player/next`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                setTimeout(checkPlayback, 500);
+            } catch (error) {
+                console.error('Error skipping track:', error);
+            }
+        }
+
+        window.onload = () => {
+            const params = getHashParams();
+            if (params.access_token) {
+                accessToken = params.access_token;
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('controls').classList.add('active');
+                document.getElementById('status').textContent = 'Conectado';
+                checkPlayback();
+                setInterval(checkPlayback, 5000);
+            }
+        };
+    </script>
+</body>
+</html>
