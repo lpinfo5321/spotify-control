@@ -2,171 +2,381 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Control de Música - La Primavera</title>
-    <style>
-        body {
-            background: linear-gradient(135deg, #1DB954, #191414);
-            font-family: Arial, sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-        }
-        
-        .player {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        
-        button {
-            background: #1DB954;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 24px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 8px;
-            transition: all 0.3s ease;
-            min-width: 200px;
-        }
-        
-        button:hover {
-            transform: scale(1.05);
-            background: #1ed760;
-        }
-        
-        .controls {
-            display: none;
-            margin-top: 20px;
-        }
-        
-        .active {
-            display: block;
-        }
-        
-        #nowPlaying {
-            margin: 16px 0;
-            font-size: 14px;
-            opacity: 0.8;
-        }
-        
-        #status {
-            margin-top: 16px;
-            font-size: 14px;
-            color: #1DB954;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Permissions-Policy" content="unload=*, microphone=*, camera=*">
+    <title>Panel de Control - Audio Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%235e72e4'><path d='M9 18V5l12-2v13'/><circle cx='6' cy='18' r='3'/><circle cx='18' cy='16' r='3'/></svg>">
 </head>
 <body>
-    <div class="player">
-        <h2>Control de Música</h2>
-        <div id="login">
-            <button onclick="iniciarSpotify()">Conectar con Spotify</button>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <h1>Audio Panel</h1>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active" data-view="library">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                        <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Biblioteca</span>
+                </li>
+                <li class="nav-item" data-view="schedule">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 7V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Programación</span>
+                </li>
+                <li class="nav-item" data-view="admin">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M19.4 15C19.2669 15.3016 19.2043 15.6362 19.22 15.97C19.2343 16.2641 19.3201 16.5543 19.4787 16.81C19.6373 17.0656 19.8617 17.2787 20.13 17.43L20.86 17.79C21.0396 17.8899 21.1967 18.0257 21.3207 18.1884C21.4446 18.3512 21.5328 18.5371 21.58 18.735C21.6334 18.9344 21.6447 19.1429 21.6132 19.3472C21.5817 19.5516 21.5082 19.7472 21.3977 19.9214C21.2872 20.0956 21.142 20.2447 20.9717 20.3593C20.8013 20.4739 20.6095 20.5515 20.409 20.5874C20.2084 20.6232 19.9031 20.6166 19.8062 20.5676C19.6094 20.5186 19.4263 20.4284 19.27 20.3L18.54 19.93C18.2713 19.7589 17.9582 19.6697 17.64 19.6707C17.3219 19.6716 17.0091 19.751 16.7321 19.9006C16.4551 20.0502 16.2232 20.2644 16.057 20.52C15.8908 20.8163 15.7945 21.1463 15.7755 21.483C15.7566 21.8198 15.8152 22.1539 15.9459 22.4582C16.0766 22.7625 16.2754 23.0284 16.5297 23.235C16.7839 23.4416 17.0846 23.5832 17.406 23.648L18.18 23.81C18.4817 23.9027 18.7547 24.0675 18.9734 24.2873C19.1921 24.5071 19.3493 24.7747 19.43 25.065C19.5001 25.3543 19.4948 25.6567 19.4144 25.9432C19.334 26.2296 19.1813 26.4905 18.9713 26.7C18.7613 26.9095 18.5003 27.0605 18.2131 27.1375C17.9259 27.2144 17.6226 27.2144 17.3354 27.1375L16.56 26.98C16.2584 26.9033 15.9419 26.8935 15.636 26.9515C15.3301 27.0095 15.0434 27.1333 14.798 27.313C14.5525 27.4928 14.3552 27.7227 14.222 27.983C14.0887 28.2432 14.023 28.5263 14.03 28.811L14.03 19.47C14.03 19.0787 13.8736 18.7035 13.5954 18.4267C13.3172 18.15 12.9395 17.995 12.546 17.995C12.1525 17.995 11.7749 18.15 11.4966 18.4267C11.2184 18.7035 11.062 19.0787 11.062 19.47L11.062 10.53C11.062 10.1387 11.2184 9.76348 11.4966 9.48672C11.7749 9.20996 12.1525 9.055 12.546 9.055C12.9395 9.055 13.3172 9.20996 13.5954 9.48672C13.8736 9.76348 14.03 10.1387 14.03 10.53L14.03 4.389C14.023 4.67433 14.0887 4.95684 14.222 5.217C14.3552 5.47731 14.5525 5.70716 14.798 5.887C15.0434 6.06673 15.3301 6.19055 15.636 6.24851C15.9419 6.30647 16.2584 6.29667 16.56 6.22L17.3354 6.06253C17.6226 5.98563 17.9259 5.98563 18.2131 6.06253C18.5003 6.13943 18.7613 6.29046 18.9713 6.49997C19.1813 6.70947 19.334 6.97036 19.4144 7.25683C19.4948 7.5433 19.5001 7.84566 19.43 8.135C19.3493 8.42533 19.1921 8.69294 18.9734 8.91273C18.7547 9.13251 18.4817 9.29729 18.18 9.39L17.406 9.552C17.0846 9.61681 16.7839 9.75838 16.5297 9.96497C16.2754 10.1716 16.0766 10.4375 15.9459 10.7418C15.8152 11.0461 15.7566 11.3802 15.7755 11.717C15.7945 12.0537 15.8908 12.3837 16.057 12.68C16.2232 12.9356 16.4551 13.1498 16.7321 13.2994C17.0091 13.449 17.3219 13.5284 17.64 13.5293C17.9582 13.5303 18.2713 13.4411 18.54 13.27L19.27 12.9C19.4263 12.7716 19.6094 12.6814 19.8062 12.6324C19.9031 12.5834 20.2084 12.5768 20.409 12.6126C20.6095 12.6485 20.8013 12.7261 20.9717 12.8407C21.142 12.9553 21.2872 13.1044 21.3977 13.2786C21.5082 13.4528 21.5817 13.6484 21.6132 13.8528C21.6447 14.0571 21.6334 14.2656 21.58 14.465C21.5328 14.6629 21.4446 14.8488 21.3207 15.0116C21.1967 15.1743 21.0396 15.3101 20.86 15.41L20.13 15.77C19.8617 15.9213 19.6373 16.1344 19.4787 16.39C19.3201 16.6457 19.2343 16.9359 19.22 17.23" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Administración</span>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <button class="theme-toggle" aria-label="Cambiar tema">
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 2V4M12 20V22M4 12H2M22 12H20M4.92893 4.92893L6.34315 6.34315M17.6569 17.6569L19.0711 19.0711M4.92893 19.0711L6.34315 17.6569M17.6569 6.34315L19.0711 4.92893" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Library View -->
+            <section class="view-section active" id="libraryView">
+                <header class="view-header">
+                    <h2>Biblioteca de Audios</h2>
+                    <div class="header-actions">
+                        <input type="text" class="search-input" placeholder="Buscar audios..." id="searchInput">
+                        <select class="filter-select" id="categoryFilter">
+                            <option value="all">Todas las categorías</option>
+                            <option value="avisos">Avisos</option>
+                            <option value="musica">Música</option>
+                            <option value="efectos">Efectos</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                </header>
+                
+                <div class="audio-grid" id="audioGrid">
+                    <!-- Audio cards will be dynamically added here -->
+                </div>
+                
+                <div class="empty-state" id="emptyState">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <h3>No hay audios en la biblioteca</h3>
+                    <p>Ve a la sección de administración para agregar nuevos audios</p>
+                </div>
+            </section>
+
+            <!-- Schedule View -->
+            <section class="view-section" id="scheduleView">
+                <header class="view-header">
+                    <h2>Programación de Audios</h2>
+                    <button class="btn btn-primary" id="addScheduleBtn">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Nueva Programación
+                    </button>
+                </header>
+                
+                <div class="schedule-list" id="scheduleList">
+                    <!-- Schedule items will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Admin View -->
+            <section class="view-section" id="adminView">
+                <header class="view-header">
+                    <h2>Administración de Audios</h2>
+                </header>
+                
+                <div class="admin-panel">
+                    <div class="upload-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3>Agregar Nuevos Audios</h3>
+                            <button class="btn btn-secondary" id="reloadAllBtn" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 2V8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M3 12C3 13.1819 3.23279 14.3522 3.68508 15.4442C4.13738 16.5361 4.80031 17.5282 5.63604 18.364C6.47177 19.1997 7.46392 19.8626 8.55585 20.3149C9.64778 20.7672 10.8181 21 12 21C13.1819 21 14.3522 20.7672 15.4442 20.3149C16.5361 19.8626 17.5282 19.1997 18.364 18.364C19.1997 17.5282 19.8626 16.5361 20.3149 15.4442C20.7672 14.3522 21 13.1819 21 12C21 10.8181 20.7672 9.64778 20.3149 8.55585C19.8626 7.46392 19.1997 6.47177 18.364 5.63604L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Recargar todos
+                            </button>
+                        </div>
+                        
+                        <div class="info-box" style="margin-bottom: 1.5rem;">
+                            <div class="info-icon">🎉</div>
+                            <div>
+                                <strong>¡Ahora los archivos se guardan permanentemente!</strong>
+                                <p>Usando tecnología IndexedDB, tus archivos de audio se guardan automáticamente en el navegador. Una vez que agregues un audio, estará disponible incluso después de recargar la página. ¡Solo agrégalos una vez y úsalos para siempre!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="media-control-section">
+                            <h3>🎵 Control de Reproductores</h3>
+                            <div class="control-options">
+                                <div class="control-option">
+                                    <label class="control-label">
+                                        <input type="checkbox" id="pauseOtherMediaToggle" checked>
+                                        <span class="control-text">
+                                            <strong>💪 CONTROL AGRESIVO - Pausar Spotify y otros reproductores</strong>
+                                            <small>Sistema ULTRA AVANZADO que FUERZA la pausa de otros reproductores usando múltiples técnicas: AudioContext dominante, interceptación de streams, Service Worker, interferencia ultrasónica y control prioritario del sistema. ¡REALMENTE FUNCIONA!</small>
+                                        </span>
+                                    </label>
+                                </div>
+                                
+                                <div class="control-option">
+                                    <label class="control-label">
+                                        <input type="checkbox" id="showNotificationsToggle" checked>
+                                        <span class="control-text">
+                                            <strong>🔔 Mostrar notificaciones</strong>
+                                            <small>Recibir notificaciones del sistema cuando se reproduzca un anuncio</small>
+                                        </span>
+                                    </label>
+                                </div>
+                                
+                                <div class="control-option">
+                                    <label class="control-label">
+                                        <input type="checkbox" id="mediaSessionToggle" checked>
+                                        <span class="control-text">
+                                            <strong>🎮 Controles de medios del sistema</strong>
+                                            <small>Permitir control desde teclado, auriculares y centro de notificaciones</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="aggressive-test-section">
+                                <h4>🧪 Prueba del Sistema Agresivo</h4>
+                                <p>Para probar que el sistema REALMENTE funciona:</p>
+                                <ol>
+                                    <li>1️⃣ Abre <strong>Spotify/YouTube</strong> y reproduce música</li>
+                                    <li>2️⃣ Haz clic en el botón de prueba</li>
+                                    <li>3️⃣ <strong>¡Observa cómo se pausa automáticamente!</strong></li>
+                                </ol>
+                                <button class="btn-aggressive-test" id="testAggressiveControl">
+                                    🚨 PROBAR CONTROL AGRESIVO AHORA
+                                </button>
+                                <small class="test-note">Nota: Puede solicitar permisos de micrófono temporalmente (es normal)</small>
+                            </div>
+                        </div>
+                        
+                        <div class="drop-zone" id="dropZone">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <h3>Arrastra archivos aquí</h3>
+                            <p>o</p>
+                            <button class="btn btn-secondary" id="selectFilesBtn">Seleccionar archivos</button>
+                            <input type="file" id="fileInput" accept="audio/*" multiple hidden>
+                        </div>
+                    </div>
+                    
+                    <div class="audio-management">
+                        <h3>Audios Cargados</h3>
+                        <div class="audio-table" id="audioTable">
+                            <!-- Audio management table will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Audio Player Bar -->
+        <div class="player-bar" id="playerBar">
+            <div class="player-info">
+                <img src="" alt="" class="player-thumbnail" id="playerThumbnail">
+                <div class="player-details">
+                    <div class="player-title-container">
+                        <h4 id="playerTitle">-</h4>
+                        <div class="equalizer" id="playerEqualizer">
+                            <div class="bar bar1"></div>
+                            <div class="bar bar2"></div>
+                            <div class="bar bar3"></div>
+                        </div>
+                    </div>
+                    <span id="playerCategory">-</span>
+                </div>
+            </div>
+            
+            <div class="player-controls">
+                <button class="player-btn" id="prevBtn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 20L9 12L19 4V20Z" fill="currentColor"/>
+                        <rect x="5" y="4" width="4" height="16" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="player-btn play-pause-btn" id="playPauseBtn">
+                    <svg class="play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 3L19 12L5 21V3Z" fill="currentColor"/>
+                    </svg>
+                    <svg class="pause-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
+                        <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="player-btn" id="nextBtn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 4L15 12L5 20V4Z" fill="currentColor"/>
+                        <rect x="15" y="4" width="4" height="16" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="player-progress">
+                <span class="time" id="currentTime">0:00</span>
+                <div class="progress-bar-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <span class="time" id="duration">0:00</span>
+            </div>
+            
+            <div class="player-options">
+                <button class="player-btn" id="loopBtn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 2L21 6M21 6L17 10M21 6H7C4.79086 6 3 7.79086 3 10V12M7 22L3 18M3 18L7 14M3 18H17C19.2091 18 21 16.2091 21 14V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="volume-control">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 5L6 9H2V15H6L11 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07M15.54 8.46C16.4774 9.39764 17.0039 10.6692 17.0039 12C17.0039 13.3308 16.4774 14.6024 15.54 15.54" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100">
+                </div>
+            </div>
         </div>
-        <div id="controls" class="controls">
-            <button onclick="playPause()" id="playButton">Play</button>
-            <button onclick="nextTrack()">Siguiente</button>
-            <div id="nowPlaying">No hay música reproduciendo</div>
-        </div>
-        <div id="status">No conectado</div>
     </div>
 
-    <script>
-        const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
-        const API_ENDPOINT = 'https://api.spotify.com/v1';
-        const scopes = [
-            'user-read-playback-state',
-            'user-modify-playback-state',
-            'streaming'
-        ];
+    <!-- Modals -->
+    <div class="modal" id="editAudioModal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2>Editar Audio</h2>
+            <form id="editAudioForm">
+                <div class="form-group">
+                    <label for="audioName">Nombre personalizado</label>
+                    <input type="text" id="audioName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="audioCategory">Categoría</label>
+                    <select id="audioCategory" class="form-input">
+                        <option value="avisos">Avisos</option>
+                        <option value="musica">Música</option>
+                        <option value="efectos">Efectos</option>
+                        <option value="otros">Otros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="audioImage">URL de imagen</label>
+                    <input type="url" id="audioImage" class="form-input" placeholder="https://ejemplo.com/imagen.jpg">
+                </div>
+                <div class="form-group">
+                    <label for="newAudioFile">🎵 Cambiar archivo de audio (opcional)</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="newAudioFile" class="file-input" accept="audio/*">
+                        <label for="newAudioFile" class="file-input-label">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 18V12L10 14M12 12L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Seleccionar nuevo archivo
+                        </label>
+                        <span class="file-name" id="newAudioFileName">Ningún archivo seleccionado</span>
+                    </div>
+                    <small class="form-hint">Si seleccionas un archivo, reemplazará el audio actual</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        let accessToken = null;
-        let isPlaying = false;
+    <div class="modal" id="scheduleModal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2>Programar Audio</h2>
+            <form id="scheduleForm">
+                <div class="form-group">
+                    <label for="scheduleAudio">Seleccionar audio</label>
+                    <select id="scheduleAudio" class="form-input" required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="scheduleTime">Hora de reproducción</label>
+                    <input type="time" id="scheduleTime" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="scheduleDays">Días de la semana</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="1"> Lunes</label>
+                        <label><input type="checkbox" value="2"> Martes</label>
+                        <label><input type="checkbox" value="3"> Miércoles</label>
+                        <label><input type="checkbox" value="4"> Jueves</label>
+                        <label><input type="checkbox" value="5"> Viernes</label>
+                        <label><input type="checkbox" value="6"> Sábado</label>
+                        <label><input type="checkbox" value="0"> Domingo</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="scheduleRepeat">Número de repeticiones</label>
+                    <input type="number" id="scheduleRepeat" class="form-input" min="1" max="100" value="1">
+                </div>
+                <div class="form-group">
+                    <label for="scheduleInterval">Intervalo entre repeticiones (segundos)</label>
+                    <input type="number" id="scheduleInterval" class="form-input" min="0" max="3600" value="5" step="1">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Tiempo de espera entre cada repetición (0 = sin espera)
+                    </small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelSchedule">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Programar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        function iniciarSpotify() {
-            const clientId = '55d3f6c5ed4441e8b79c17a5ba54f39f';
-            const redirectUri = 'https://laprimavera5321.github.io/spotify-control/';
-            
-            const authUrl = `${AUTH_ENDPOINT}?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes.join('%20')}`;
-            window.location.href = authUrl;
-        }
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
-        function getHashParams() {
-            const hash = window.location.hash.substring(1);
-            return hash.split('&').reduce((acc, item) => {
-                const [key, value] = item.split('=');
-                acc[key] = value;
-                return acc;
-            }, {});
-        }
-
-        async function checkPlayback() {
-            try {
-                const response = await fetch(`${API_ENDPOINT}/me/player`, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                
-                if (response.status === 200) {
-                    const data = await response.json();
-                    isPlaying = data.is_playing;
-                    document.getElementById('playButton').textContent = isPlaying ? 'Pause' : 'Play';
-                    if (data.item) {
-                        document.getElementById('nowPlaying').textContent = 
-                            `Reproduciendo: ${data.item.name} - ${data.item.artists[0].name}`;
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking playback:', error);
-            }
-        }
-
-        async function playPause() {
-            const endpoint = isPlaying ? 'pause' : 'play';
-            try {
-                await fetch(`${API_ENDPOINT}/me/player/${endpoint}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                isPlaying = !isPlaying;
-                document.getElementById('playButton').textContent = isPlaying ? 'Pause' : 'Play';
-                setTimeout(checkPlayback, 500);
-            } catch (error) {
-                console.error('Error controlling playback:', error);
-            }
-        }
-
-        async function nextTrack() {
-            try {
-                await fetch(`${API_ENDPOINT}/me/player/next`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                setTimeout(checkPlayback, 500);
-            } catch (error) {
-                console.error('Error skipping track:', error);
-            }
-        }
-
-        window.onload = () => {
-            const params = getHashParams();
-            if (params.access_token) {
-                accessToken = params.access_token;
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('controls').classList.add('active');
-                document.getElementById('status').textContent = 'Conectado';
-                checkPlayback();
-                setInterval(checkPlayback, 5000);
-            }
-        };
-    </script>
+    <!-- Scripts de la aplicación -->
+    <script src="config.js"></script>
+    <script src="spotify-integration.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

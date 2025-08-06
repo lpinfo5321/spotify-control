@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Spotify</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #1ed760;
+            padding: 20px;
+        }
+        button {
+            background: #1ed760;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 20px;
+        }
+        .result {
+            background: #282828;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #1ed760;
+        }
+        .error {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+        .success {
+            color: #1ed760;
+            border-color: #1ed760;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug de Spotify Integration</h1>
+    
+    <button onclick="checkLocalStorage()">🔍 Verificar localStorage</button>
+    <button onclick="clearAuth()">🧹 Limpiar Autenticación</button>
+    <button onclick="testSaveCode()">💾 Test Guardar Código</button>
+    <button onclick="manualProcess()">🚀 Procesar Manualmente</button>
+    <button onclick="fixConnection()">🔧 Arreglar Conexión</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<pre>${message}</pre>`;
+            document.getElementById('results').prepend(div);
+        }
+        
+        function checkLocalStorage() {
+            addResult('=== VERIFICANDO LOCALSTORAGE ===', 'info');
+            
+            const items = {
+                'spotify_auth_code': localStorage.getItem('spotify_auth_code'),
+                'spotify_code_verifier': localStorage.getItem('spotify_code_verifier'),
+                'spotify_state': localStorage.getItem('spotify_state'),
+                'spotify_access_token': localStorage.getItem('spotify_access_token')
+            };
+            
+            for (const [key, value] of Object.entries(items)) {
+                if (value) {
+                    addResult(`✅ ${key}: ${value.substring(0, 50)}...`, 'success');
+                } else {
+                    addResult(`❌ ${key}: NO ENCONTRADO`, 'error');
+                }
+            }
+            
+            // Verificar si el código está en la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if (code) {
+                addResult(`⚠️ CÓDIGO EN URL: ${code.substring(0, 30)}...`, 'success');
+                addResult('💡 El código está en la URL pero no en localStorage!', 'error');
+            }
+        }
+        
+        function clearAuth() {
+            addResult('🧹 Limpiando datos de autenticación...', 'info');
+            localStorage.removeItem('spotify_auth_code');
+            localStorage.removeItem('spotify_code_verifier');
+            localStorage.removeItem('spotify_state');
+            localStorage.removeItem('spotify_access_token');
+            addResult('✅ Datos limpiados', 'success');
+        }
+        
+        function testSaveCode() {
+            const testCode = 'TEST_CODE_' + Date.now();
+            localStorage.setItem('spotify_auth_code', testCode);
+            const saved = localStorage.getItem('spotify_auth_code');
+            
+            if (saved === testCode) {
+                addResult('✅ localStorage funciona correctamente', 'success');
+                addResult(`Código guardado: ${testCode}`, 'info');
+            } else {
+                addResult('❌ ERROR: localStorage no funciona!', 'error');
+            }
+        }
+        
+        function manualProcess() {
+            addResult('🚀 Intentando procesar manualmente...', 'info');
+            
+            const code = localStorage.getItem('spotify_auth_code');
+            const verifier = localStorage.getItem('spotify_code_verifier');
+            
+            if (!code) {
+                addResult('❌ No hay código en localStorage', 'error');
+                
+                // Intentar obtener de la URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlCode = urlParams.get('code');
+                if (urlCode) {
+                    addResult('💡 Código encontrado en URL, guardando...', 'info');
+                    localStorage.setItem('spotify_auth_code', urlCode);
+                    addResult('✅ Código guardado desde URL', 'success');
+                }
+            }
+            
+            if (!verifier) {
+                addResult('⚠️ No hay code verifier - generando uno nuevo', 'error');
+                // Generar uno nuevo si no existe
+                const newVerifier = generateRandomString(128);
+                localStorage.setItem('spotify_code_verifier', newVerifier);
+                addResult('✅ Code verifier generado', 'success');
+            }
+            
+            if (window.spotifyIntegration && typeof window.spotifyIntegration.handleAuthorizationCode === 'function') {
+                const finalCode = localStorage.getItem('spotify_auth_code');
+                if (finalCode) {
+                    addResult('🔄 Procesando código con spotifyIntegration...', 'info');
+                    window.spotifyIntegration.handleAuthorizationCode(finalCode);
+                    addResult('✅ Código enviado a procesar', 'success');
+                }
+            } else {
+                addResult('❌ spotifyIntegration no está disponible', 'error');
+            }
+        }
+        
+        function generateRandomString(length) {
+            const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const values = crypto.getRandomValues(new Uint8Array(length));
+            return values.reduce((acc, x) => acc + possible[x % possible.length], '');
+        }
+        
+        function fixConnection() {
+            addResult('🔧 Intentando arreglar la conexión...', 'info');
+            
+            // Paso 1: Limpiar todo
+            clearAuth();
+            
+            // Paso 2: Abrir la página principal
+            addResult('📱 Abriendo página principal en nueva pestaña...', 'info');
+            window.open('http://127.0.0.1:8000', '_blank');
+            
+            addResult(`
+✅ INSTRUCCIONES:
+1. Ve a la nueva pestaña
+2. Ve a "Administración"
+3. Haz clic en "Conectar Spotify"
+4. Autoriza en el popup
+5. Si el popup no se cierra, ejecuta en consola:
+   debugSpotifyAuth()
+            `, 'success');
+        }
+        
+        // Verificar automáticamente al cargar
+        window.onload = () => {
+            addResult('🔍 Debug iniciado - ' + new Date().toLocaleTimeString(), 'info');
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

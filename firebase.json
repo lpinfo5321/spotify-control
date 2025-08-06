@@ -1,0 +1,59 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "server.py",
+      "*.md",
+      "**/*.log",
+      ".firebaserc",
+      ".firebase/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET, POST, OPTIONS"
+          },
+          {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Authorization"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "**/*.js",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/javascript; charset=utf-8"
+          }
+        ]
+      },
+      {
+        "source": "**/*.css",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "text/css; charset=utf-8"
+          }
+        ]
+      }
+    ],
+    "rewrites": [],
+    "cleanUrls": false,
+    "trailingSlash": false
+  }
+}

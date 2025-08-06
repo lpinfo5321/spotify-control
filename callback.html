@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify - Procesando...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1ed760, #1db954);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        h2 { margin: 0 0 20px 0; }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>✅ Autorización Exitosa</h2>
+        <div class="spinner"></div>
+        <p>Procesando conexión con Spotify...</p>
+        <p style="font-size: 0.9em; opacity: 0.8;">Esta ventana se cerrará automáticamente</p>
+    </div>
+
+    <script>
+        // SOLUCIÓN DIRECTA - GUARDAR CÓDIGO INMEDIATAMENTE
+        (function() {
+            console.log('🚀 CALLBACK INICIADO');
+            
+            // Obtener código de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+            
+            if (error) {
+                console.error('❌ Error de Spotify:', error);
+                document.querySelector('h2').textContent = '❌ Error de Autorización';
+                document.querySelector('p').textContent = error;
+                setTimeout(() => window.close(), 3000);
+                return;
+            }
+            
+            if (code) {
+                console.log('✅ CÓDIGO RECIBIDO:', code.substring(0, 30) + '...');
+                
+                // GUARDAR EN LOCALSTORAGE INMEDIATAMENTE
+                try {
+                    localStorage.setItem('spotify_auth_code', code);
+                    console.log('✅ CÓDIGO GUARDADO EN LOCALSTORAGE');
+                    
+                    // También guardar el state para verificación
+                    if (state) {
+                        localStorage.setItem('spotify_callback_state', state);
+                    }
+                    
+                    // INTENTAR COMUNICAR CON VENTANA PADRE
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            // Intentar llamada directa
+                            if (window.opener.spotifyIntegration) {
+                                console.log('🔄 Llamando directamente a spotifyIntegration...');
+                                window.opener.spotifyIntegration.handleAuthorizationCode(code);
+                            }
+                            
+                            // También enviar mensaje por si acaso
+                            window.opener.postMessage({
+                                type: 'spotify-auth-success',
+                                code: code
+                            }, '*');
+                            
+                            console.log('✅ Comunicación con ventana padre exitosa');
+                        } catch (e) {
+                            console.log('⚠️ No se pudo comunicar con ventana padre:', e.message);
+                        }
+                    }
+                    
+                    // MARCAR COMO EXITOSO
+                    localStorage.setItem('spotify_auth_status', 'success');
+                    localStorage.setItem('spotify_auth_timestamp', Date.now().toString());
+                    
+                    document.querySelector('h2').textContent = '✅ ¡Conectado!';
+                    document.querySelector('p').textContent = 'Puedes cerrar esta ventana';
+                    
+                } catch (e) {
+                    console.error('❌ Error guardando código:', e);
+                    document.querySelector('h2').textContent = '❌ Error';
+                    document.querySelector('p').textContent = 'Error guardando autorización';
+                }
+                
+                // CERRAR VENTANA
+                setTimeout(() => {
+                    console.log('🔄 Cerrando ventana...');
+                    window.close();
+                }, 1500);
+                
+            } else {
+                console.error('❌ No se recibió código');
+                document.querySelector('h2').textContent = '❌ Sin Código';
+                document.querySelector('p').textContent = 'No se recibió código de autorización';
+                setTimeout(() => window.close(), 3000);
+            }
+        })();
+    </script>
+</body>
+</html>
